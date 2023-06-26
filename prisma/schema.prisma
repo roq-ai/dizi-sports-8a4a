@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["clientExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model analyst {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organization_id String?        @db.Uuid
+  user_id         String?        @db.Uuid
+  created_at      DateTime       @default(now()) @db.Timestamp(6)
+  updated_at      DateTime       @default(now()) @db.Timestamp(6)
+  organization    organization?  @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user            user?          @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  cricket_stat    cricket_stat[]
+}
+
+model blog {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title           String        @db.VarChar(255)
+  content         String
+  organization_id String?       @db.Uuid
+  created_at      DateTime      @default(now()) @db.Timestamp(6)
+  updated_at      DateTime      @default(now()) @db.Timestamp(6)
+  organization    organization? @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model cricket_stat {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  stat       String   @db.VarChar(255)
+  analyst_id String?  @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  analyst    analyst? @relation(fields: [analyst_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model live_score {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  score           Int
+  organization_id String?       @db.Uuid
+  created_at      DateTime      @default(now()) @db.Timestamp(6)
+  updated_at      DateTime      @default(now()) @db.Timestamp(6)
+  organization    organization? @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model organization {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  description    String?          @db.VarChar
+  image          String?          @db.VarChar
+  name           String           @db.VarChar(255)
+  created_at     DateTime         @default(now()) @db.Timestamp(6)
+  updated_at     DateTime         @default(now()) @db.Timestamp(6)
+  user_id        String           @db.Uuid
+  tenant_id      String           @db.VarChar(255)
+  analyst        analyst[]
+  blog           blog[]
+  live_score     live_score[]
+  user           user             @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  youtube_stream youtube_stream[]
+}
+
+model user {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String         @unique @db.VarChar(255)
+  firstName    String?        @db.VarChar(255)
+  lastName     String?        @db.VarChar(255)
+  roq_user_id  String         @db.VarChar(255)
+  tenant_id    String         @db.VarChar(255)
+  created_at   DateTime       @default(now()) @db.Timestamp(6)
+  updated_at   DateTime       @default(now()) @db.Timestamp(6)
+  analyst      analyst[]
+  organization organization[]
+}
+
+model youtube_stream {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  url             String        @db.VarChar(255)
+  organization_id String?       @db.Uuid
+  created_at      DateTime      @default(now()) @db.Timestamp(6)
+  updated_at      DateTime      @default(now()) @db.Timestamp(6)
+  organization    organization? @relation(fields: [organization_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
